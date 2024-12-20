@@ -14,7 +14,8 @@
     "errors": {
         "required": "This field is required",
         "invalidInput": "Invalid input",
-        "serverError": "A server error occurred"
+        "serverError": "A server error occurred",
+        "selectGuild": "Please select a server"
     },
     "header": {
         "login": "Login",

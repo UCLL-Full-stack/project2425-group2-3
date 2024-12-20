@@ -182,7 +182,7 @@ const ExpandedTask: React.FC<ExpandedTaskProps> = ({ task, onClose, onTaskUpdate
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder={t("task.title")}
+                            placeholder={t("task.create.title")}
                             className={`w-full p-2 mb-2 rounded-md outline-none ${
                                 permissions.canEditTasks ? "bg-gray-600 text-white" : "bg-gray-700 text-gray-400"
                             }`}

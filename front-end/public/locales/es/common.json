@@ -14,7 +14,8 @@
     "errors": {
         "required": "Este campo es obligatorio",
         "invalidInput": "Entrada no válida",
-        "serverError": "Ocurrió un error en el servidor"
+        "serverError": "Ocurrió un error en el servidor",
+        "selectGuild": "Por favor selecciona un servidor"
     },
     "header": {
         "login": "Iniciar Sesión",
