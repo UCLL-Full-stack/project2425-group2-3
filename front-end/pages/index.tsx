@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import { FC, useEffect, useState } from 'react';
+import { FC, useCallback, useEffect, useState } from 'react';
 import Header from '../components/Header';
 import UserService from '@/services/UserService';
 import GuildCard from '@/components/dashboard/GuildCard';
@@ -46,49 +46,58 @@ const Home: FC = () => {
     }
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const storedUser = sessionStorage.getItem('user');
-        const sessionGuilds = JSON.parse(sessionStorage.getItem('guilds') || '[]');
-        if(storedUser) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          const sessionToken = sessionStorage.getItem('token');
-          if(!sessionToken) {
-            const loginData = await UserService.login(parsedUser.userId);
-            setToken(loginData.token);
-          }
-          const dbGuilds = await UserService.getGuilds(parsedUser.userId);
-          const displayGuilds = sessionGuilds.map((guild: any) => {
-            const matchingDbGuild = dbGuilds.find((dbGuild: any) => dbGuild.guildId === guild.guildId);
-            return {
-              ...guild,
-              guildName: matchingDbGuild?.guildName || guild.guildName,
-              greyedOut: !matchingDbGuild && !guild.botInGuild,
-            };
-          });
-          displayGuilds.sort((a: any, b: any) => a.greyedOut - b.greyedOut);
-          setGuilds(dbGuilds);
-          setDisplayGuilds(displayGuilds);
-          const fetchedPermissions = await Promise.all(
-            dbGuilds.map(async (guild: { guildId: string }) => {
-              const permission = await UserService.getUserGuildKanbanPermissions(parsedUser.userId, guild.guildId);
-              return { guildId: guild.guildId, permissions: permission };
-            })
-          );
-          setPermissions(fetchedPermissions);
+  const fetchData = useCallback(async () => {
+    try {
+      const storedUser = sessionStorage.getItem('user');
+      const sessionGuilds = JSON.parse(sessionStorage.getItem('guilds') || '[]');
+  
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+  
+        const sessionToken = sessionStorage.getItem('token');
+        if (!sessionToken) {
+          const loginData = await UserService.login(parsedUser.userId);
+          setToken(loginData.token);
+          sessionStorage.setItem('token', loginData.token);
         }
-      } catch (error) {
-        console.error('Error fetching user data', error);
-      } finally {
-        setLoading(false);
+  
+        const dbGuilds = await UserService.getGuilds(parsedUser.userId);
+        const displayGuilds = sessionGuilds.map((guild: any) => {
+          const matchingDbGuild = dbGuilds.find((dbGuild: any) => dbGuild.guildId === guild.guildId);
+          return {
+            ...guild,
+            guildName: matchingDbGuild?.guildName || guild.guildName,
+            greyedOut: !matchingDbGuild && !guild.botInGuild,
+          };
+        });
+  
+        displayGuilds.sort((a: any, b: any) => a.greyedOut - b.greyedOut);
+  
+        setGuilds(dbGuilds);
+        setDisplayGuilds(displayGuilds);
+  
+        const fetchedPermissions = await Promise.all(
+          dbGuilds.map(async (guild: { guildId: string }) => {
+            const permission = await UserService.getUserGuildKanbanPermissions(parsedUser.userId, guild.guildId);
+            return { guildId: guild.guildId, permissions: permission };
+          })
+        );
+  
+        setPermissions(fetchedPermissions);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching user data", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [setUser]);
+  
+  useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000);
     return () => clearInterval(interval);
-  }, [permissions, setUser]);
+  }, [fetchData]);
 
   useEffect(() => {
     if (selectedGuildId) {
