@@ -35,6 +35,7 @@ const Home: FC = () => {
   const [editingBoardPermissionsId, setEditingBoardPermissionsId] = useState<string | null>(null);
   const { t } = useTranslation(['common']);
   const [token, setToken] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const refreshSelectedBoard = async () => {
     if (!selectedBoard) return;
@@ -43,6 +44,7 @@ const Home: FC = () => {
       setSelectedBoard(updatedBoard);
     } catch (error) {
       console.error('Error refreshing selected board:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   };
 
@@ -88,6 +90,7 @@ const Home: FC = () => {
       }
     } catch (error) {
       console.error("Error fetching user data", error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     } finally {
       setLoading(false);
     }
@@ -114,6 +117,7 @@ const Home: FC = () => {
                 return canViewBoard ? board : null;
               } catch (error) {
                 console.error(`Error checking permissions for board ${board.boardId}:`, error);
+                setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
                 return null;
               }
             })
@@ -121,6 +125,7 @@ const Home: FC = () => {
           setBoards(filteredBoards.filter((board) => board !== null) || []);
         } catch (error) {
           console.error('Error fetching boards', error);
+          setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
         }
       };
 
@@ -166,6 +171,7 @@ const Home: FC = () => {
           setBoards(filteredBoards.filter((board) => board !== null) || []);
         } catch (error) {
           console.error('Error fetching boards', error);
+          setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
       }
     }
   };
@@ -216,6 +222,7 @@ const Home: FC = () => {
                 return canViewBoard ? board : null;
             } catch (error) {
                 console.error(`Error checking permissions for board ${board.boardId}:`, error);
+                setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
                 return null;
             }
         })
@@ -224,6 +231,7 @@ const Home: FC = () => {
     }
     } catch (error) {
       console.error('Error creating board', error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
     handleBoardCreationFormClose();
   };
@@ -249,6 +257,7 @@ const Home: FC = () => {
       console.log("Guild settings updated successfully");
     } catch (error) {
       console.error('Error updating guild settings:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   }
 
@@ -267,6 +276,7 @@ const Home: FC = () => {
                 return canViewBoard ? board : null;
             } catch (error) {
                 console.error(`Error checking permissions for board ${board.boardId}:`, error);
+                setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
                 return null;
             }
         })
@@ -274,6 +284,7 @@ const Home: FC = () => {
         setBoards(filteredBoards.filter((board)=> board !== null) || []);
     } catch (error) {
         console.error('Error deleting board:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   }
 
@@ -291,6 +302,7 @@ const Home: FC = () => {
                 return canViewBoard ? board : null;
             } catch (error) {
                 console.error(`Error checking permissions for board ${board.boardId}:`, error);
+                setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
                 return null;
             }
         }))
@@ -298,6 +310,7 @@ const Home: FC = () => {
         setEditingBoardId(null);
     } catch (error) {
         console.error('Error updating board:', error);
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   };
 
@@ -315,6 +328,7 @@ const Home: FC = () => {
               return canViewBoard ? board : null;
           } catch (error) {
               console.error(`Error checking permissions for board ${board.boardId}:`, error);
+              setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
               return null;
           }
       }))
@@ -322,6 +336,7 @@ const Home: FC = () => {
       setEditingBoardPermissionsId(null);
     } catch (error) {
       console.error('Error updating permissions:', error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   };
 
@@ -348,6 +363,7 @@ const Home: FC = () => {
       setSelectedBoard(updatedBoard);
     } catch (error) {
       console.error("Error adding column:", error);
+      setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   };
 
@@ -372,6 +388,7 @@ const Home: FC = () => {
         console.log("Column deleted successfully");
     } catch (error) {
         console.error("Error deleting column:", error);
+        setErrorMessage(error instanceof Error ? error.message : 'An unexpected error occured.');
     }
   };
 
@@ -389,6 +406,17 @@ const Home: FC = () => {
               boardTitle={selectedBoard?.boardName}
           />
           <main className="flex-grow">
+            {errorMessage && (
+                <div className="bg-red-600 text-white p-4 rounded mb-4 text-center">
+                    <p>{errorMessage}</p>
+                    <button
+                        className="mt-2 bg-white text-red-600 px-4 py-2 rounded"
+                        onClick={() => setErrorMessage(null)}
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
             {selectedBoard ? (
                 <BoardView
                   board={selectedBoard}

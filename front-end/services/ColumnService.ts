@@ -1,3 +1,4 @@
+import {handleFetchErrors} from '../util/fetchErrors';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const getColumnById = async (columnId: string) => {
@@ -9,7 +10,7 @@ const getColumnById = async (columnId: string) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const updateColumn = async (columnId: string, column: any) => {
@@ -22,7 +23,7 @@ const updateColumn = async (columnId: string, column: any) => {
         },
         body: JSON.stringify(column),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const deleteColumn = async (columnId: string) => {
@@ -38,7 +39,7 @@ const deleteColumn = async (columnId: string) => {
         throw new Error(`Failed to delete column: ${response.statusText}`);
     }
     if (response.status !== 204) {
-        await response.json();
+        return await handleFetchErrors(response);
     }};
 
 const addTaskToColumn = async (columnId: string, task: any) => {
@@ -51,7 +52,7 @@ const addTaskToColumn = async (columnId: string, task: any) => {
         },
         body: JSON.stringify(task),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 }
 
 const addColumn = async (column: any) => {
@@ -64,7 +65,7 @@ const addColumn = async (column: any) => {
         },
         body: JSON.stringify(column),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const ColumnService = {

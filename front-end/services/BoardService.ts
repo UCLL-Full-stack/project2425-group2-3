@@ -1,5 +1,5 @@
 import { Board } from '@/types';
-
+import {handleFetchErrors} from '../util/fetchErrors';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 interface CreateBoardParams {
@@ -28,7 +28,7 @@ const getBoard = async (boardId: string): Promise<Board> => {
     if (!response.ok) {
         throw new Error('Failed to fetch board');
     }
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const getBoardsByGuild = async (guildId: string): Promise<Board[]> => {
@@ -43,7 +43,7 @@ const getBoardsByGuild = async (guildId: string): Promise<Board[]> => {
     if (!response.ok) {
         throw new Error('Failed to fetch guild boards');
     }
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const createBoard = async (board: CreateBoardParams): Promise<Board> => {
@@ -59,7 +59,7 @@ const createBoard = async (board: CreateBoardParams): Promise<Board> => {
     if (!response.ok) {
         throw new Error('Failed to create board');
     }
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const deleteBoard = async (boardId: string): Promise<void> => {
@@ -89,7 +89,7 @@ const updateBoard = async (boardId: string, board: UpdateBoardParams): Promise<B
     if (!response.ok) {
         throw new Error('Failed to update board');
     }
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const reorderColumns = async (boardId: string, columnIds: string[]): Promise<Board> => {
@@ -105,7 +105,7 @@ const reorderColumns = async (boardId: string, columnIds: string[]): Promise<Boa
     if (!response.ok) {
         throw new Error('Failed to reorder columns');
     }
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const BoardService = {

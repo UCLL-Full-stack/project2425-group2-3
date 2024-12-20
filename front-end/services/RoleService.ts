@@ -1,3 +1,4 @@
+import {handleFetchErrors} from '../util/fetchErrors';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const getRoles = async () => {
@@ -7,7 +8,7 @@ const getRoles = async () => {
             'Content-Type': 'application/json',
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const getRole = async (roleId: string) => {
@@ -17,7 +18,7 @@ const getRole = async (roleId: string) => {
             'Content-Type': 'application/json',
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const addRole = async (role: any) => {
@@ -28,7 +29,7 @@ const addRole = async (role: any) => {
         },
         body: JSON.stringify(role),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const updateRole = async (roleId: string, role: any) => {
@@ -39,7 +40,7 @@ const updateRole = async (roleId: string, role: any) => {
         },
         body: JSON.stringify(role),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const RoleService = {

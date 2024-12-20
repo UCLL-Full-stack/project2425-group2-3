@@ -1,3 +1,4 @@
+import {handleFetchErrors} from '../util/fetchErrors';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const getTask = async (taskId: string) => {
@@ -9,7 +10,7 @@ const getTask = async (taskId: string) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 }
 
 const updateTask = async (taskId: string, task: any) => {
@@ -22,7 +23,7 @@ const updateTask = async (taskId: string, task: any) => {
         },
         body: JSON.stringify(task),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const deleteTask = async (taskId: string) => {
@@ -38,7 +39,7 @@ const deleteTask = async (taskId: string) => {
         throw new Error(`Failed to delete column: ${response.statusText}`);
     }
     if (response.status !== 204) {
-        await response.json();
+        return await handleFetchErrors(response);
     }
 };
 
@@ -52,7 +53,7 @@ const addTask = async (task: any) => {
         },
         body: JSON.stringify(task),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const TaskService = {

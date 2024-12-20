@@ -1,3 +1,4 @@
+import {handleFetchErrors} from '../util/fetchErrors';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const getUsers = async () => {
@@ -9,7 +10,7 @@ const getUsers = async () => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const getUser = async (userId: string) => {
@@ -19,7 +20,7 @@ const getUser = async (userId: string) => {
             'Content-Type': 'application/json',
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const addUser = async (user: any) => {
@@ -30,7 +31,7 @@ const addUser = async (user: any) => {
         },
         body: JSON.stringify(user),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const updateUser = async (userId: string, user: any) => {
@@ -41,7 +42,7 @@ const updateUser = async (userId: string, user: any) => {
         },
         body: JSON.stringify(user),
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const getGuilds = async (userId: string) => {
@@ -53,7 +54,7 @@ const getGuilds = async (userId: string) => {
             Authorization: `Bearer ${token}`,
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const getUserGuildKanbanPermissions = async (userId: string, guildId: string) => {
@@ -65,7 +66,7 @@ const getUserGuildKanbanPermissions = async (userId: string, guildId: string) =>
             Authorization: `Bearer ${token}`,
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const getAllKanbanPermissionsForBoard = async (userId: string, boardId: string) => {
@@ -77,7 +78,7 @@ const getAllKanbanPermissionsForBoard = async (userId: string, boardId: string) 
             Authorization: `Bearer ${token}`,
         },
     });
-    return await response.json();
+    return await handleFetchErrors(response);
 };
 
 const login = async (userId: string): Promise<{ token: string; userId: string; username: string; globalName: string }> => {
