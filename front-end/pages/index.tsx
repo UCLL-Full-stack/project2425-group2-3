@@ -382,16 +382,44 @@ const Home: FC = () => {
                 />
             ) : (
               <>
-                <div className="p-4">
+                <div>
+                {!user && (
+                  <div className="flex flex-col items-center min-h-screen bg-gray-900 text-white">
+                    <h1 className="text-2xl font-bold mb-4">Predefined Users (Login to discord before logging in on KanbanCord)</h1>
+                    <table className="table-auto border-collapse border border-gray-400">
+                      <thead>
+                        <tr>
+                          <th className="border border-gray-300 px-4 py-2">Email</th>
+                          <th className="border border-gray-300 px-4 py-2">Password</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="border border-gray-300 px-4 py-2">jenaro@beefance.com</td>
+                          <td className="border border-gray-300 px-4 py-2">jenarobeefance</td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-300 px-4 py-2">africa.15@beefance.com</td>
+                          <td className="border border-gray-300 px-4 py-2">africa15beefance</td>
+                        </tr>
+                        <tr>
+                          <td className="border border-gray-300 px-4 py-2">eagle4@beefance.com</td>
+                          <td className="border border-gray-300 px-4 py-2">eagle4beefance</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  )}
                   {loading && user ? (
                       <p>{t("loading")}</p>
                   ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
                           {displayGuilds.map(guild => (
                               <GuildCard key={guild.guildId} guild={guild} onClick={handleGuildClick} onCreateClick={handleBoardCreateClick} onGuildSettingsClick={handleGuildEditSettings} permissions={permissions}/>
                           ))}
                       </div>
                   )}
+
                 </div>
                 {selectedGuildId && (
                 <div className="mt-8 p-4 bg-gray-800 rounded-lg m-4">
