@@ -1,49 +1,21 @@
-import { Role } from "../../model/role";
-import { DiscordPermission } from "../../types";
+import { describe, it, expect } from '@jest/globals';
+import { Role } from '../../model/role';
+import { DiscordPermission } from '../../types';
+
 
 describe('Role Model', () => {
-    let role: Role;
+    it('should create a Role instance with given properties', () => {
+        const role = new Role('role1', 'Test Role', [DiscordPermission.ADMINISTRATOR, DiscordPermission.ADD_REACTIONS], 'guild1');
 
-    beforeEach(() => {
-        role = new Role('role1', 'Admin', []);
-    });
-
-    test('should create a valid role', () => {
+        expect(role).toBeDefined();
         expect(role.getRoleId()).toBe('role1');
-        expect(role.getRoleName()).toBe('Admin');
+        expect(role.getRoleName()).toBe('Test Role');
+        expect(role.getPermissions()).toEqual([DiscordPermission.ADMINISTRATOR, DiscordPermission.ADD_REACTIONS]);
+        expect(role.getGuildId()).toBe('guild1');
     });
 
-    test('should add a permission to the role', () => {
-        role.addPermission(DiscordPermission.MANAGE_CHANNELS);
-        expect(role.getPermissions().length).toBe(1);
-        expect(role.hasPermission(DiscordPermission.MANAGE_CHANNELS)).toBe(true);
-    });
-
-    test('should throw error when adding duplicate permission', () => {
-        role.addPermission(DiscordPermission.MANAGE_CHANNELS);
-        expect(() => {
-            role.addPermission(DiscordPermission.MANAGE_CHANNELS);
-        }).toThrow('Permission Manage Channels already exists for this role.');
-    });
-
-    test('should remove a permission from the role', () => {
-        role.addPermission(DiscordPermission.MANAGE_CHANNELS);
-        role.removePermission(DiscordPermission.MANAGE_CHANNELS);
-        expect(role.getPermissions().length).toBe(0);
-    });
-
-    test('should throw error when removing a non-existing permission', () => {
-        expect(() => {
-            role.removePermission(DiscordPermission.MANAGE_CHANNELS);
-        }).toThrow('Permission Manage Channels does not exist for this role.');
-    });
-
-    test('should validate the role ID and name', () => {
-        expect(() => {
-            new Role('', 'Admin', []);
-        }).toThrow('Role ID is required');
-        expect(() => {
-            new Role('role1', '', []);
-        }).toThrow('Role Name is required');
+    it('should throw an error if required properties are missing or invalid', () => {
+        expect(() => new Role('role1', '', [DiscordPermission.ADMINISTRATOR], 'guild1')).toThrowError('Role name cannot be empty.');
+        expect(() => new Role('role1', 'Test Role', [DiscordPermission.ADMINISTRATOR], '')).toThrowError('Guild ID cannot be empty.');
     });
 });

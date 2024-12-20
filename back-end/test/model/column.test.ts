@@ -1,35 +1,21 @@
-import { Column } from "../../model/column";
-import { Task } from "../../model/task";
-
+import { describe, it, expect } from '@jest/globals';
+import { Column } from '../../model/column';
 
 describe('Column Model', () => {
-    let column: Column;
+    it('should create a Column instance with given properties', () => {
+        const column = new Column('column1', 'Test Column', 0, ['task1', 'task2'], 'board1');
 
-    beforeEach(() => {
-        column = new Column('column1-1', 'To Do', []);
+        expect(column).toBeDefined();
+        expect(column.getColumnId()).toBe('column1');
+        expect(column.getColumnName()).toBe('Test Column');
+        expect(column.getColumnIndex()).toBe(0);
+        expect(column.getTaskIds()).toEqual(['task1', 'task2']);
+        expect(column.getBoardId()).toBe('board1');
     });
 
-    test('should create a valid column', () => {
-        expect(column.getColumnId()).toBe('column1-1');
-        expect(column.getColumnName()).toBe('To Do');
-    });
-
-    test('should add a task to the column', () => {
-        const task = new Task('task1-1-1', 'Test Task', 'Description', new Date(), []);
-        column.addTask(task);
-        expect(column.getTasks().length).toBe(1);
-    });
-
-    test('should remove a task from the column', () => {
-        const task = new Task('task1-1-1', 'Test Task', 'Description', new Date(), []);
-        column.addTask(task);
-        column.removeTask('task1-1-1');
-        expect(column.getTasks().length).toBe(0);
-    });
-
-    test('should throw error if trying to remove a non-existing task', () => {
-        expect(() => {
-            column.removeTask('non-existing-task');
-        }).toThrow('Task not found');
+    it('should throw an error if required properties are missing or invalid', () => {
+        expect(() => new Column('column1', '', 0, ['task1'], 'board1')).toThrowError('Column name cannot be empty.');
+        expect(() => new Column('column1', 'Test Column', undefined as any, ['task1'], 'board1')).toThrowError('Column index cannot be empty.');
+        expect(() => new Column('column1', 'Test Column', 0, ['task1'], '')).toThrowError('Board ID cannot be empty.');
     });
 });

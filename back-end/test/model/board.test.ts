@@ -1,66 +1,106 @@
-import { Board } from "../../model/board";
-import { Column } from "../../model/column";
-import { Guild } from "../../model/guild";
-import { User } from "../../model/user";
-import { DiscordPermission, KanbanPermission } from "../../types";
-
+import { describe, it, expect } from '@jest/globals';
+import { Board } from '../../model/board';
+import { User } from '../../model/user';
+import { Guild } from '../../model/guild';
+import { Column } from '../../model/column';
+import { PermissionEntry, KanbanPermission, DiscordPermission } from '../../types';
 
 describe('Board Model', () => {
-    let board: Board;
-    let user: User;
-    let guild: Guild;
-    let columns: Column[];
+    it('should create a Board instance with given properties', () => {
+        const mockUser = new User(
+            'user1',
+            'TestUser',
+            'TestGlobalName',
+            'avatar.png',
+            ['guild1']
+        );
 
-    beforeEach(() => {
-        guild = new Guild('guild1', 'Guild 1', [
-            { identifier: DiscordPermission.ADMINISTRATOR, kanbanPermission: [KanbanPermission.ADMINISTRATOR] },
-        ], [], []);
-        user = new User('user1', 'Alice', 'alice#1234', [guild]);
-        columns = [new Column('column1-1', 'To Do', []), new Column('column1-2', 'In Progress', [])];
-        board = new Board('board1', 'Project 1', user, guild, columns, [
-            { identifier: DiscordPermission.ADMINISTRATOR, kanbanPermission: [KanbanPermission.ADMINISTRATOR] },
-        ]);
-    });
+        const mockPermissionSettings: PermissionEntry[] = [{
+            identifier: DiscordPermission.ADMINISTRATOR,
+            kanbanPermission: [KanbanPermission.VIEW_BOARD],
+            
+        }];
 
-    test('should create a valid board', () => {
+        const mockGuild = new Guild(
+            'guild1',
+            'Test Guild', 
+            'owner1',
+            mockPermissionSettings,
+            ['role1'],
+            [{ userId: 'user1', roleIds: ['role1'] }],
+            ['board1']
+        );
+
+        const mockColumns = [
+            new Column('column1', 'Column 1', 0, [], 'board1')
+        ];
+
+        const mockPermissions: PermissionEntry[] = [
+            {
+                identifier: 'permission1',
+                kanbanPermission: [
+                    KanbanPermission.VIEW_BOARD,
+                    KanbanPermission.EDIT_BOARD
+                ]
+            }
+        ];
+
+        const board = new Board(
+            'board1',
+            'Test Board',
+            mockUser.getUserId(),
+            mockColumns.map(column => column.getColumnId()),
+            mockGuild.getGuildId(),
+            mockPermissions
+        );
+
+        expect(board).toBeDefined();
         expect(board.getBoardId()).toBe('board1');
-        expect(board.getBoardName()).toBe('Project 1');
+        expect(board.getBoardName()).toBe('Test Board');
+        expect(board.getCreatedByUserId()).toBe(mockUser.getUserId());
+        expect(board.getGuildId()).toBe(mockGuild.getGuildId());
+        expect(board.getColumnIds()).toEqual(mockColumns.map(column => column.getColumnId()));
+        expect(board.getPermissions()).toEqual(mockPermissions);
     });
 
-    test('should throw error for invalid board name', () => {
-        expect(() => {
-            new Board('board1', '  ', user, guild, columns, []);
-        }).toThrow('Board Name is required');
-    });
+    it('should throw an error if required properties are missing', () => {
+        const mockUser = new User(
+            'user1',
+            'TestUser',
+            'TestGlobalName',
+            'avatar.png',
+            ['guild1']
+        );
 
-    test('should throw error if no columns are provided', () => {
-        expect(() => {
-            new Board('board2', 'Project 2', user, guild, [], []);
-        }).toThrow('Board must have at least one column');
-    });
+        const mockPermissionSettings: PermissionEntry[] = [{
+            identifier: DiscordPermission.ADMINISTRATOR,
+            kanbanPermission: [KanbanPermission.VIEW_BOARD]
+        }];
 
-    test('should throw error if permissions are not set', () => {
-        expect(() => {
-            new Board('board3', 'Project 3', user, guild, columns, []);
-        }).toThrow('Board must have permission settings');
-    });
+        const mockGuild = new Guild(
+            'guild1',
+            'Test Guild',
+            'owner1',
+            mockPermissionSettings,
+            ['role1'],
+            [{ userId: 'user1', roleIds: ['role1'] }],
+            ['board1']
+        );
 
-    test('should add a column to the board', () => {
-        const newColumn = new Column('column1-3', 'Done', []);
-        board.addColumn(newColumn);
-        expect(board.getColumns().length).toBe(3);
-    });
+        const mockColumns = [
+            new Column('column1', 'Column 1', 0, [], 'board1')
+        ];
 
-    test('should throw error when trying to remove the last column', () => {
-        board.removeColumn('column1-1');
-        expect(() => {
-            board.removeColumn('column1-2');
-        }).toThrow('Cannot remove the last column');
-    });
+        const mockPermissions: PermissionEntry[] = [
+            {
+                identifier: 'permission1',
+                kanbanPermission: [KanbanPermission.VIEW_BOARD]
+            }
+        ];
 
-    test('should throw error when trying to remove a non-existing column', () => {
-        expect(() => {
-            board.removeColumn('non-existing-column');
-        }).toThrow('Column not found');
+        expect(() => new Board('board1', '', mockUser.getUserId(), mockColumns.map(column => column.getColumnId()), mockGuild.getGuildId(), mockPermissions)).toThrowError('Board name cannot be empty.');
+        expect(() => new Board('board1', 'Test Board', "", mockColumns.map(column => column.getColumnId()), mockGuild.getGuildId(), mockPermissions)).toThrowError('Created by user ID cannot be empty.');
+        expect(() => new Board('board1', 'Test Board', mockUser.getUserId(), mockColumns.map(column => column.getColumnId()), "", mockPermissions)).toThrowError('Guild ID cannot be empty.');
+        expect(() => new Board('board1', 'Test Board', mockUser.getUserId(), mockColumns.map(column => column.getColumnId()), mockGuild.getGuildId(), [])).toThrowError('Permissions cannot be empty.');
     });
 });

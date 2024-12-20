@@ -1,59 +1,24 @@
-import { Task } from "../../model/task";
-import { User } from "../../model/user";
+import { describe, it, expect } from '@jest/globals';
+import { Task } from '../../model/task';
 
 describe('Task Model', () => {
-    let task: Task;
-    let user: User;
+    it('should create a Task instance with given properties', () => {
+        const dueDate = new Date();
+        const task = new Task('task1', 'Test Task', 'Description of test task', 1, dueDate, ['user1'], 'column1');
 
-    beforeEach(() => {
-        user = new User('user1', 'Alice', 'alice#1234', []);
-        task = new Task('task1', 'Test Task', 'This is a description', new Date(), [user]);
-    });
-
-    test('should create a valid task', () => {
+        expect(task).toBeDefined();
         expect(task.getTaskId()).toBe('task1');
         expect(task.getTitle()).toBe('Test Task');
-        expect(task.getDescription()).toBe('This is a description');
+        expect(task.getDescription()).toBe('Description of test task');
+        expect(task.getTaskIndex()).toBe(1);
+        expect(task.getDueDate()).toBe(dueDate);
+        expect(task.getAssigneeIds()).toEqual(['user1']);
+        expect(task.getColumnId()).toBe('column1');
     });
 
-    test('should throw error if task ID is missing', () => {
-        expect(() => {
-            new Task('', 'Test Task', 'This is a description', new Date(), []);
-        }).toThrow('Task ID is required');
-    });
-
-    test('should throw error if title is missing', () => {
-        expect(() => {
-            new Task('task2', '', 'This is a description', new Date(), []);
-        }).toThrow('Task Title is required');
-    });
-
-    test('should throw error if description is missing', () => {
-        expect(() => {
-            new Task('task3', 'Test Task', '', new Date(), []);
-        }).toThrow('Task Description is required');
-    });
-
-    test('should throw error if due date is missing', () => {
-        expect(() => {
-            new Task('task4', 'Test Task', 'This is a description', undefined as any, []);
-        }).toThrow('Task Due Date is required');
-    });
-
-    test('should add an assignee', () => {
-        const newUser = new User('user2', 'Bob', 'bob#5678', []);
-        task.addAssignee(newUser);
-        expect(task.getAssignees().length).toBe(2);
-    });
-
-    test('should remove an assignee', () => {
-        task.removeAssignee('user1');
-        expect(task.getAssignees().length).toBe(0);
-    });
-
-    test('should throw error if trying to remove a non-existing assignee', () => {
-        expect(() => {
-            task.removeAssignee('non-existing-user');
-        }).toThrow('Assignee not found');
+    it('should throw an error if required properties are missing or invalid', () => {
+        const dueDate = new Date();
+        expect(() => new Task('task1', '', 'Description', 1, dueDate, ['user1'], 'column1')).toThrowError('Task title cannot be empty.');
+        expect(() => new Task('task1', 'Test Task', 'Description', 1, dueDate, ['user1'], '')).toThrowError('Column ID cannot be empty.');
     });
 });
