@@ -8,7 +8,7 @@ const getGuilds = async () => {
             'Content-Type': 'application/json',
         },
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const getGuildPermissions = async (guildId: string) => {
@@ -30,7 +30,7 @@ const getGuild = async (guildId: string) => {
             'Content-Type': 'application/json',
         },
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const addGuild = async (guild: any) => {
@@ -41,7 +41,7 @@ const addGuild = async (guild: any) => {
         },
         body: JSON.stringify(guild),
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const updateGuild = async (guildId: string, guild: any) => {
@@ -52,7 +52,7 @@ const updateGuild = async (guildId: string, guild: any) => {
         },
         body: JSON.stringify(guild),
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const getGuildMembers = async (guildId: string) => {

@@ -20,7 +20,7 @@ const getUser = async (userId: string) => {
             'Content-Type': 'application/json',
         },
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const addUser = async (user: any) => {
@@ -31,7 +31,7 @@ const addUser = async (user: any) => {
         },
         body: JSON.stringify(user),
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const updateUser = async (userId: string, user: any) => {
@@ -42,7 +42,7 @@ const updateUser = async (userId: string, user: any) => {
         },
         body: JSON.stringify(user),
     });
-    return await handleFetchErrors(response);
+    return await response.json();
 };
 
 const getGuilds = async (userId: string) => {
