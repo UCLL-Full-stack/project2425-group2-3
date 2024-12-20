@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next';
 dotenv.config();
 
 const Home: FC = () => {
-  const { user, setUser} = useUser();
+  const { user, setUser } = useUser();
   const [guilds, setGuilds] = useState<Guild[]>([]);
   const [displayGuilds, setDisplayGuilds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +34,7 @@ const Home: FC = () => {
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
   const [editingBoardPermissionsId, setEditingBoardPermissionsId] = useState<string | null>(null);
   const { t } = useTranslation(['common']);
+  const [token, setToken] = useState<string | null>(null);
 
   const refreshSelectedBoard = async () => {
     if (!selectedBoard) return;
@@ -53,6 +54,11 @@ const Home: FC = () => {
         if(storedUser) {
           const parsedUser = JSON.parse(storedUser);
           setUser(parsedUser);
+          const sessionToken = sessionStorage.getItem('token');
+          if(!sessionToken) {
+            const loginData = await UserService.login(parsedUser.userId);
+            setToken(loginData.token);
+          }
           const dbGuilds = await UserService.getGuilds(parsedUser.userId);
           const displayGuilds = sessionGuilds.map((guild: any) => {
             const matchingDbGuild = dbGuilds.find((dbGuild: any) => dbGuild.guildId === guild.guildId);

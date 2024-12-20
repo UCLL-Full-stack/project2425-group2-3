@@ -17,10 +17,12 @@ interface UpdateBoardParams {
 }
 
 const getBoard = async (boardId: string): Promise<Board> => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/boards/${boardId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
     });
     if (!response.ok) {
@@ -30,10 +32,12 @@ const getBoard = async (boardId: string): Promise<Board> => {
 };
 
 const getBoardsByGuild = async (guildId: string): Promise<Board[]> => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/boards/guild/${guildId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
     });
     if (!response.ok) {
@@ -43,10 +47,12 @@ const getBoardsByGuild = async (guildId: string): Promise<Board[]> => {
 };
 
 const createBoard = async (board: CreateBoardParams): Promise<Board> => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/boards`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(board),
     });
@@ -57,10 +63,12 @@ const createBoard = async (board: CreateBoardParams): Promise<Board> => {
 };
 
 const deleteBoard = async (boardId: string): Promise<void> => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/boards/${boardId}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
     });
     if (!response.ok) {
@@ -69,10 +77,12 @@ const deleteBoard = async (boardId: string): Promise<void> => {
 };
 
 const updateBoard = async (boardId: string, board: UpdateBoardParams): Promise<Board> => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/boards/${boardId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(board),
     });
@@ -83,10 +93,12 @@ const updateBoard = async (boardId: string, board: UpdateBoardParams): Promise<B
 };
 
 const reorderColumns = async (boardId: string, columnIds: string[]): Promise<Board> => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/boards/${boardId}/columns/reorder`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ columnIds }),
     });

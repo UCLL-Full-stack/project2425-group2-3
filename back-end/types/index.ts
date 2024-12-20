@@ -176,3 +176,10 @@ export interface UpdateTaskInput {
     assigneeIds?: string[];
     columnId?: string;
 }
+
+export interface AuthenticationResponse {
+    token: string;
+    userId: string;
+    username?: string;
+    globalName?: string;
+}

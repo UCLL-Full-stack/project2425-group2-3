@@ -1,11 +1,17 @@
 import { Router } from 'express';
 import columnService from '../service/column.service';
+import { requireAuth } from '../util/helperFunctions';
 
 const columnRouter = Router();
 
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  *   schemas:
  *     Task:
  *       type: object
@@ -67,6 +73,8 @@ const columnRouter = Router();
  * @swagger
  * /api/columns:
  *   post:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Create a new column
  *     requestBody:
  *       required: true
@@ -77,15 +85,22 @@ const columnRouter = Router();
  *     responses:
  *       201:
  *         description: Column created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Column'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-columnRouter.post('/', async (req, res) => {
+columnRouter.post('/', requireAuth, async (req, res) => {
     const column = req.body;
     try {
         const createdColumn = await columnService.addColumn(column);
         res.status(201).json(createdColumn);
-
     } catch (error) {
         res.status(400).json({ error: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
@@ -95,6 +110,8 @@ columnRouter.post('/', async (req, res) => {
  * @swagger
  * /api/columns/{columnId}:
  *   get:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Retrieve a specific column by ID
  *     parameters:
  *       - in: path
@@ -106,10 +123,18 @@ columnRouter.post('/', async (req, res) => {
  *     responses:
  *       200:
  *         description: Column retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Column'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-columnRouter.get('/:columnId', async (req, res) => {
+columnRouter.get('/:columnId', requireAuth, async (req, res) => {
     const { columnId } = req.params;
     try {
         const column = await columnService.getColumnById(columnId);
@@ -123,6 +148,8 @@ columnRouter.get('/:columnId', async (req, res) => {
  * @swagger
  * /api/columns/{columnId}:
  *   delete:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Delete a specific column by ID
  *     parameters:
  *       - in: path
@@ -136,8 +163,12 @@ columnRouter.get('/:columnId', async (req, res) => {
  *         description: Column deleted successfully
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-columnRouter.delete('/:columnId', async (req, res) => {
+columnRouter.delete('/:columnId', requireAuth, async (req, res) => {
     const { columnId } = req.params;
     try {
         await columnService.deleteColumn(columnId);
@@ -151,6 +182,8 @@ columnRouter.delete('/:columnId', async (req, res) => {
  * @swagger
  * /api/columns/{columnId}:
  *   put:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Update a specific column by ID
  *     parameters:
  *       - in: path
@@ -168,10 +201,18 @@ columnRouter.delete('/:columnId', async (req, res) => {
  *     responses:
  *       200:
  *         description: Column updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Column'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-columnRouter.put('/:columnId', async (req, res) => {
+columnRouter.put('/:columnId', requireAuth, async (req, res) => {
     const { columnId } = req.params;
     const updatedColumn = req.body;
     try {
@@ -186,6 +227,8 @@ columnRouter.put('/:columnId', async (req, res) => {
  * @swagger
  * /api/columns/{columnId}/tasks:
  *   post:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Add a task to a column
  *     parameters:
  *       - in: path
@@ -203,10 +246,22 @@ columnRouter.put('/:columnId', async (req, res) => {
  *     responses:
  *       201:
  *         description: Task added successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Task added successfully
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-columnRouter.post('/:columnId/tasks', async (req, res) => {
+columnRouter.post('/:columnId/tasks', requireAuth, async (req, res) => {
     const { columnId } = req.params;
     const task = req.body;
     try {

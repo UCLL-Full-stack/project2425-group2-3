@@ -11,6 +11,9 @@ import guildRouter from './controller/guild.routes';
 import taskRouter from './controller/task.routes';
 import userRouter from './controller/user.routes';
 import roleRouter from './controller/role.routes';
+import { expressjwt } from 'express-jwt';
+import { Request, Response, NextFunction } from 'express';
+import authorizationMiddleware from './util/helperFunctions';
 
 const app = express();
 dotenv.config();
@@ -26,6 +29,22 @@ app.use(cors({
 }));
 
 app.use(bodyParser.json());
+
+app.use(
+  authorizationMiddleware.unless({
+      path: [
+          "/api-docs",
+          /^\/api-docs\/.*/,
+          "/status",
+          { url: '/api/users/login', methods: ['POST'] },
+          { url: /^\/api\/users\/[^/]+$/, methods: ['GET', 'POST', 'PUT'] },
+          { url: '/api/guilds', methods: ['GET', 'POST'] },
+          { url: /^\/api\/guilds\/[^/]+$/, methods: ['GET', 'PUT'] },
+              { url: '/api/roles', methods: ['GET', 'POST'] },
+          { url: /^\/api\/roles\/[^/]+$/, methods: ['GET', 'PUT'] },
+      ],
+  })
+);
 
 const swaggerOpts = {
     definition: {
@@ -56,6 +75,18 @@ app.use('/api/guilds', guildRouter);
 app.use('/api/tasks', taskRouter);
 app.use('/api/users', userRouter);
 app.use('/api/roles', roleRouter);
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.name === "UnauthorizedError") {
+      return res.status(401).json({ error: "Invalid or missing token" });
+  }
+  console.error(err.stack);
+  res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+      message: err.message,
+  });
+});
 
 app.get('/status', (req, res) => {
     res.json({ message: 'Back-end is running...' });

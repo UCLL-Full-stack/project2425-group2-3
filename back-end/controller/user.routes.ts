@@ -1,12 +1,18 @@
 import { Router } from "express";
 import userService from "../service/user.service";
 import { UpdateUserInput } from "../types";
+import { requireAuth } from "../util/helperFunctions";
 
 const userRouter = Router();
 
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  *   schemas:
  *     User:
  *       type: object
@@ -28,17 +34,6 @@ const userRouter = Router();
  *           items:
  *             type: string
  *           description: List of guild IDs the user is part of
- *         boardIds:
- *           type: array
- *           items:
- *             type: string
- *           description: List of board IDs associated with the user
- *         taskIds:
- *           type: array
- *           items:
- *             type: string
- *           description: List of task IDs associated with the user
- * 
  *     ErrorResponse:
  *       type: object
  *       properties:
@@ -52,6 +47,8 @@ const userRouter = Router();
  * /api/users:
  *   get:
  *     summary: Retrieve a list of users
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: A list of users
@@ -61,15 +58,19 @@ const userRouter = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/User'
- *       404:
- *         description: No users found
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.get("/", async (req, res) => {
+userRouter.get("/", requireAuth, async (req, res, next) => {
     try {
         const users = await userService.getAllUsers();
         res.status(200).json(users);
     } catch (error) {
-        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
     }
 });
 
@@ -82,7 +83,6 @@ userRouter.get("/", async (req, res) => {
  *       - in: path
  *         name: userId
  *         required: true
- *         description: The ID of the user to retrieve
  *         schema:
  *           type: string
  *     responses:
@@ -92,16 +92,20 @@ userRouter.get("/", async (req, res) => {
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/User'
- *       404:
- *         description: User not found
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.get("/:userId", async (req, res) => {
+userRouter.get("/:userId", async (req, res, next) => {
     const { userId } = req.params;
     try {
         const user = await userService.getUserById(userId);
         res.status(200).json(user);
     } catch (error) {
-        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
     }
 });
 
@@ -119,16 +123,24 @@ userRouter.get("/:userId", async (req, res) => {
  *     responses:
  *       201:
  *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.post("/", async (req, res) => {
-    const { userId, username, globalName, userAvatar, guildIds = [] } = req.body;
+userRouter.post("/", async (req, res, next) => {
     try {
+        const { userId, username, globalName, userAvatar, guildIds = [] } = req.body;
         const user = await userService.addUser({ userId, username, globalName, userAvatar, guildIds });
         res.status(201).json(user);
     } catch (error) {
-        res.status(400).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
     }
 });
 
@@ -141,7 +153,6 @@ userRouter.post("/", async (req, res) => {
  *       - in: path
  *         name: userId
  *         required: true
- *         description: The ID of the user to update
  *         schema:
  *           type: string
  *     requestBody:
@@ -153,24 +164,34 @@ userRouter.post("/", async (req, res) => {
  *     responses:
  *       200:
  *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.put("/:userId", async (req, res) => {
+userRouter.put("/:userId", async (req, res, next) => {
     const { userId } = req.params;
     const { username, globalName, userAvatar, guildIds, boardIds, taskIds } = req.body;
+
     const updateInput: UpdateUserInput = {};
-    if (username !== undefined) updateInput.username = username;
-    if (globalName !== undefined) updateInput.globalName = globalName;
-    if (userAvatar !== undefined) updateInput.userAvatar = userAvatar;
-    if (guildIds !== undefined) updateInput.guildIds = guildIds;
-    if (boardIds !== undefined) updateInput.boardIds = boardIds;
-    if (taskIds !== undefined) updateInput.taskIds = taskIds;
+    if (username) updateInput.username = username;
+    if (globalName) updateInput.globalName = globalName;
+    if (userAvatar) updateInput.userAvatar = userAvatar;
+    if (guildIds) updateInput.guildIds = guildIds;
+    if (boardIds) updateInput.boardIds = boardIds;
+    if (taskIds) updateInput.taskIds = taskIds;
+
     try {
         const user = await userService.updateUser(userId, updateInput);
         res.status(200).json(user);
     } catch (error) {
-        res.status(400).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
     }
 });
 
@@ -179,26 +200,37 @@ userRouter.put("/:userId", async (req, res) => {
  * /api/users/{userId}/guilds:
  *   get:
  *     summary: Retrieve all guilds associated with a user
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
  *         required: true
- *         description: The ID of the user
  *         schema:
  *           type: string
  *     responses:
  *       200:
  *         description: A list of guilds associated with the user
- *       404:
- *         description: User or guilds not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.get("/:userId/guilds", async (req, res) => {
+userRouter.get("/:userId/guilds", requireAuth, async (req, res, next) => {
     const { userId } = req.params;
     try {
         const guilds = await userService.getUserGuilds(userId);
         res.status(200).json(guilds);
     } catch (error) {
-        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
     }
 });
 
@@ -206,6 +238,8 @@ userRouter.get("/:userId/guilds", async (req, res) => {
  * @swagger
  * /api/users/{userId}/guilds/{guildId}/kanban-permissions:
  *   get:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Retrieve kanban permissions for a user in a specific guild
  *     parameters:
  *       - in: path
@@ -223,16 +257,27 @@ userRouter.get("/:userId/guilds", async (req, res) => {
  *     responses:
  *       200:
  *         description: Kanban permissions retrieved successfully
- *       404:
- *         description: Permissions not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["View Board", "Edit Board"]
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.get("/:userId/guilds/:guildId/kanban-permissions", async (req, res) => {
+userRouter.get("/:userId/guilds/:guildId/kanban-permissions", requireAuth, async (req, res, next) => {
     const { userId, guildId } = req.params;
     try {
         const kanbanPermissions = await userService.getAllKanbanPermissionsForGuild(userId, guildId);
         res.status(200).json(kanbanPermissions);
     } catch (error) {
-        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
     }
 });
 
@@ -240,6 +285,8 @@ userRouter.get("/:userId/guilds/:guildId/kanban-permissions", async (req, res) =
  * @swagger
  * /api/users/{userId}/boards/{boardId}/kanban-permissions:
  *   get:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Retrieve kanban permissions for a user in a specific board
  *     parameters:
  *       - in: path
@@ -257,16 +304,71 @@ userRouter.get("/:userId/guilds/:guildId/kanban-permissions", async (req, res) =
  *     responses:
  *       200:
  *         description: Kanban permissions retrieved successfully
- *       404:
- *         description: Permissions not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["Create Tasks", "Manage Board Permissions"]
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
-userRouter.get("/:userId/boards/:boardId/kanban-permissions", async (req, res) => {
+userRouter.get("/:userId/boards/:boardId/kanban-permissions", requireAuth, async (req, res, next) => {
     const { userId, boardId } = req.params;
     try {
         const kanbanPermissions = await userService.getAllKanbanPermissionsForBoard(userId, boardId);
         res.status(200).json(kanbanPermissions);
     } catch (error) {
-        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
+        next(error);
+    }
+});
+
+
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: Authenticate a user using userId
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User authenticated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+userRouter.post("/login", async (req, res, next) => {
+    try {
+        const { userId } = req.body;
+        const authResponse = await userService.loginWithToken(userId);
+        res.status(200).json(authResponse);
+    } catch (error) {
+        next(error);
     }
 });
 

@@ -1,11 +1,17 @@
 import { Router } from 'express';
 import taskService from '../service/task.service';
+import { requireAuth } from '../util/helperFunctions';
 
 const taskRouter = Router();
 
 /**
  * @swagger
  * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  *   schemas:
  *     Task:
  *       type: object
@@ -28,7 +34,6 @@ const taskRouter = Router();
  *           items:
  *             type: string
  *             description: List of user IDs assigned to the task
- * 
  *     ErrorResponse:
  *       type: object
  *       properties:
@@ -41,6 +46,8 @@ const taskRouter = Router();
  * @swagger
  * /api/tasks/{taskId}:
  *   put:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Update a task
  *     parameters:
  *       - in: path
@@ -61,30 +68,22 @@ const taskRouter = Router();
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Task updated successfully
+ *               $ref: '#/components/schemas/Task'
  *       400:
- *         description: Bad Request
+ *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-taskRouter.put('/:taskId', async (req, res) => {
+taskRouter.put('/:taskId', requireAuth, async (req, res, next) => {
     const { taskId } = req.params;
     const updatedTask = req.body;
     try {
         const task = await taskService.updateTask(taskId, updatedTask);
         res.status(200).json(task);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: 'An unknown error occurred' });
-        }    
+        next(error);
     }
 });
 
@@ -92,6 +91,8 @@ taskRouter.put('/:taskId', async (req, res) => {
  * @swagger
  * /api/tasks/{taskId}:
  *   delete:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Delete a task
  *     parameters:
  *       - in: path
@@ -104,23 +105,19 @@ taskRouter.put('/:taskId', async (req, res) => {
  *       204:
  *         description: Task deleted successfully
  *       400:
- *         description: Bad Request
+ *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-taskRouter.delete('/:taskId', async (req, res) => {
+taskRouter.delete('/:taskId', requireAuth, async (req, res, next) => {
     const { taskId } = req.params;
     try {
         await taskService.deleteTask(taskId);
         res.status(204).send();
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: 'An unknown error occurred' });
-        }    
+        next(error);
     }
 });
 
@@ -128,6 +125,8 @@ taskRouter.delete('/:taskId', async (req, res) => {
  * @swagger
  * /api/tasks:
  *   post:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Create a new task
  *     requestBody:
  *       required: true
@@ -138,24 +137,24 @@ taskRouter.delete('/:taskId', async (req, res) => {
  *     responses:
  *       201:
  *         description: Task created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Task'
  *       400:
- *         description: Bad Request
+ *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-taskRouter.post('/', async (req, res) => {
+taskRouter.post('/', requireAuth, async (req, res, next) => {
     const task = req.body;
     try {
         const createdTask = await taskService.addTask(task);
         res.status(201).json(createdTask);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: 'An unknown error occurred' });
-        }
+        next(error);
     }
 });
 
@@ -163,6 +162,8 @@ taskRouter.post('/', async (req, res) => {
  * @swagger
  * /api/tasks/{taskId}:
  *   get:
+ *     security:
+ *       - bearerAuth: []
  *     summary: Retrieve a specific task by ID
  *     parameters:
  *       - in: path
@@ -179,23 +180,19 @@ taskRouter.post('/', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Task'
  *       400:
- *         description: Bad Request
+ *         description: Bad request
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-taskRouter.get('/:taskId', async (req, res) => {
+taskRouter.get('/:taskId', requireAuth, async (req, res, next) => {
     const { taskId } = req.params;
     try {
         const task = await taskService.getTaskById(taskId);
         res.status(200).json(task);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: 'An unknown error occurred' });
-        }
+        next(error);
     }
 });
 

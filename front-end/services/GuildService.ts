@@ -11,10 +11,12 @@ const getGuilds = async () => {
 };
 
 const getGuildPermissions = async (guildId: string) => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/guilds/${guildId}/permissions`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
     });
     return await response.json();
@@ -53,20 +55,24 @@ const updateGuild = async (guildId: string, guild: any) => {
 };
 
 const getGuildMembers = async (guildId: string) => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/guilds/${guildId}/members`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
     });
     return await response.json();
 };
 
 const getGuildRoles = async (guildId: string) => {
+    const token = sessionStorage.getItem('token');
     const response = await fetch(`${API_URL}/api/guilds/${guildId}/roles`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
         },
     });
     return await response.json();

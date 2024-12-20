@@ -5,8 +5,7 @@ import guildDb from "../repository/guild.db";
 import roleDb from "../repository/role.db";
 import userDb from "../repository/user.db";
 import { CreateUserInput, DiscordPermission, KanbanPermission, UpdateUserInput } from "../types";
-
-
+import jwt from 'jsonwebtoken';
 
 const getAllUsers = async (): Promise<User[]> => {
     return await userDb.getAllUsers();
@@ -97,6 +96,43 @@ const getAllKanbanPermissionsForBoard = async (userId: string, boardId: string):
     return kanbanPermissions;
 }
 
+
+const loginWithToken = async (userId: string): Promise<{ token: string; user: { userId: string, username: string, globalName: string} }> => {
+    const user = await userDb.getUserById(userId);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const token = generateJWTtoken({
+        userId: user.getUserId(),
+        username: user.getUsername(),
+        globalName: user.getGlobalName(),
+    });
+
+    return {
+        token,
+        user: {
+            userId: user.getUserId(),
+            username: user.getUsername(),
+            globalName: user.getGlobalName(),
+        },
+    };
+};
+
+const generateJWTtoken = ({ userId, username, globalName }: { userId: string; username: string; globalName: string }): string => {
+    const options = { expiresIn: `${process.env.JWT_EXPIRES_HOURS}h`, issuer: 'kanban_cord_app' };
+    try {
+        if (!process.env.JWT_SECRET) {
+            throw new Error('JWT_SECRET is not defined');
+        }
+        return jwt.sign({ userId, username, globalName }, process.env.JWT_SECRET, options);
+    } catch (error) {
+        console.error('Error while generating token:', error);
+        throw new Error('Error while generating token');
+    }
+};
+
+
 export default {
     getAllUsers,
     getUserById,
@@ -106,5 +142,6 @@ export default {
     canUserAccessGuild,
     getAllKanbanPermissionsForGuild,
     getAllDiscordPermissionsForGuild,
-    getAllKanbanPermissionsForBoard
+    getAllKanbanPermissionsForBoard,
+    loginWithToken,
 }

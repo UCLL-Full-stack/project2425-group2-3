@@ -8,6 +8,11 @@ const roleRouter = Router();
  * @swagger
  * components:
  *   schemas:
+ *     securitySchemes:
+ *       bearerAuth:
+ *         type: http
+ *         scheme: bearer
+ *         bearerFormat: JWT
  *     Role:
  *       type: object
  *       properties:
@@ -25,7 +30,6 @@ const roleRouter = Router();
  *         guildId:
  *           type: string
  *           description: Guild to which the role belongs
- * 
  *     ErrorResponse:
  *       type: object
  *       properties:
@@ -50,17 +54,17 @@ const roleRouter = Router();
  *                 $ref: '#/components/schemas/Role'
  *       404:
  *         description: No roles found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 roleRouter.get("/", async (req, res) => {
     try {
         const roles = await roleService.getAllRoles();
         res.status(200).json(roles);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(404).json({ error: error.message });
-        } else {
-            res.status(404).json({ error: "An unknown error occurred" });
-        }
+        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
 
@@ -85,6 +89,10 @@ roleRouter.get("/", async (req, res) => {
  *               $ref: '#/components/schemas/Role'
  *       404:
  *         description: Role not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 roleRouter.get("/:roleId", async (req, res) => {
     const { roleId } = req.params;
@@ -92,11 +100,7 @@ roleRouter.get("/:roleId", async (req, res) => {
         const role = await roleService.getRoleById(roleId);
         res.status(200).json(role);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(404).json({ error: error.message });
-        } else {
-            res.status(404).json({ error: "An unknown error occurred" });
-        }
+        res.status(404).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
 
@@ -114,8 +118,16 @@ roleRouter.get("/:roleId", async (req, res) => {
  *     responses:
  *       201:
  *         description: Role created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Role'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 roleRouter.post("/", async (req, res) => {
     const { roleId, roleName, permissions = [], guildId } = req.body;
@@ -124,11 +136,7 @@ roleRouter.post("/", async (req, res) => {
         const role = await roleService.addRole(createRole);
         res.status(201).json(role);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: "An unknown error occurred" });
-        }
+        res.status(400).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
 
@@ -153,8 +161,16 @@ roleRouter.post("/", async (req, res) => {
  *     responses:
  *       200:
  *         description: Role updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Role'
  *       400:
  *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
  */
 roleRouter.put("/:roleId", async (req, res) => {
     const { roleId } = req.params;
@@ -163,11 +179,7 @@ roleRouter.put("/:roleId", async (req, res) => {
         const role = await roleService.updateRole(roleId, { roleName, permissions });
         res.status(200).json(role);
     } catch (error) {
-        if (error instanceof Error) {
-            res.status(400).json({ error: error.message });
-        } else {
-            res.status(400).json({ error: "An unknown error occurred" });
-        }
+        res.status(400).json({ error: error instanceof Error ? error.message : "An unknown error occurred" });
     }
 });
 
